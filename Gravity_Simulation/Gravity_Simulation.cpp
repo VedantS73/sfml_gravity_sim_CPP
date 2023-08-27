@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <vector>
 
 class GravitySource
 {
@@ -50,13 +51,18 @@ public:
 
         s.setPosition(pos);
         s.setFillColor(sf::Color::White);
-        s.setRadius(8);
+        s.setRadius(5);
     }
 
     void render(sf::RenderWindow& wind)
     {
         s.setPosition(pos);
         wind.draw(s);
+    }
+
+    void set_colour(sf::Color col)
+    {
+        s.setFillColor(col);
     }
 
     void update_physics(GravitySource &s)
@@ -83,14 +89,55 @@ public:
     }
 };
 
+sf::Color map_val_to_color(float value)
+{
+    //value 0 - 1
+    if (value < 0.0f) value = 0;
+    if (value > 0.0f) value = 1;
+
+    int r = 0, g = 0, b = 0;
+
+    //0.0 - 0.5 red to green
+    //0.5 - 0.1 green to red
+
+    if (value < 0.5f)
+    {
+        b = 255 * (1.0f - 2 * value);
+        g = 255 * 2 * value;
+    }
+    else {
+        b = 255 * (2.0f - 2 * value);
+        r = 255 * (2 * value - 1);
+    }
+
+    return sf::Color(r, g, b);
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1600, 1000), "Gravity Simulation");
     window.setFramerateLimit(60);
 
-    GravitySource source(800, 500, 7000);
-    Particle particle(600, 700, 4, 0);
-    Particle particle1(600, 710, 5, 0);
+    //GravitySource source(800, 500, 7000);
+    //Particle particle(600, 700, 4, 0);
+
+    std::vector<GravitySource> sources;
+
+    sources.push_back(GravitySource(500, 500, 7000));
+    sources.push_back(GravitySource(1200, 500, 7000));
+
+    int num_particles = 2000;
+
+    std::vector<Particle> particles;
+    for (int i = 1; i <= num_particles; i++)
+    {
+        particles.push_back(Particle(600, 700 ,4 ,0.2 + (0.1/num_particles)*i));
+        //colours
+        float val = (float)i / (float)num_particles;
+        sf::Color col = map_val_to_color(val);
+
+        particles[i].set_colour(col);
+    }
 
     while (window.isOpen())
     {
@@ -103,12 +150,25 @@ int main()
 
         //render
         window.clear();
-        particle.update_physics(source);
-        particle1.update_physics(source);
+        
+        for (int i = 0; i < sources.size(); i++)
+        {
+            for (int j = 0; j < particles.size(); j++)
+            {
+                particles[j].update_physics(sources[i]);
+            }
+        }
 
-        source.render(window);
-        particle.render(window);
-        particle1.render(window);
+        for (int i = 0; i < sources.size(); i++)
+        {
+            sources[i].render(window);
+        }
+
+        for (int j = 0; j < particles.size(); j++)
+        {
+            particles[j].render(window);
+        }
+
         window.display();
     }
 
