@@ -97,11 +97,7 @@ sf::Color map_val_to_color(float value)
 
     int r = 0, g = 0, b = 0;
 
-    //0.0 - 0.5 red to green
-    //0.5 - 0.1 green to red
-
-    if (value < 0.5f)
-    {
+    if (value < 0.5f) {
         b = 255 * (1.0f - 2 * value);
         g = 255 * 2 * value;
     }
@@ -136,7 +132,7 @@ int main()
         float val = (float)i / (float)num_particles;
         sf::Color col = map_val_to_color(val);
 
-        particles[i].set_colour(col);
+        //particles[i].set_colour(col);
     }
 
     while (window.isOpen())
